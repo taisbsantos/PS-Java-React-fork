@@ -1,5 +1,6 @@
 package br.com.banco.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -8,13 +9,18 @@ public class ExtratoDTO {
     Long numeroConta;
     LocalDate dataInicio;
     LocalDate dataFim;
+    BigDecimal saldoTotal;
+    BigDecimal saldoPeriodo;
     List<TransferenciaDTO> transferencias;
 
-    public ExtratoDTO(Long numeroConta, LocalDate dataInicio, LocalDate dataFim, List<TransferenciaDTO> transferencias) {
+    public ExtratoDTO(Long numeroConta, LocalDate dataInicio, LocalDate dataFim, List<TransferenciaDTO> transferencias,
+                      BigDecimal saldoTotal, BigDecimal saldoPeriodo) {
         this.numeroConta = numeroConta;
         this.dataInicio = dataInicio;
         this.dataFim = dataFim;
         this.transferencias = transferencias;
+        this.saldoTotal = saldoTotal;
+        this.saldoPeriodo = saldoPeriodo;
     }
 
     public LocalDate getDataInicio() {
@@ -48,5 +54,21 @@ public class ExtratoDTO {
 
     public void setNumeroConta(Long numeroConta) {
         this.numeroConta = numeroConta;
+    }
+
+    public BigDecimal getSaldoTotal() {
+        return saldoTotal;
+    }
+
+    public void setSaldoTotal(BigDecimal saldoTotal) {
+        this.saldoTotal = saldoTotal;
+    }
+
+    public BigDecimal getSaldoPeriodo() {
+        return saldoPeriodo;
+    }
+
+    public void setSaldoPeriodo(BigDecimal saldoPeriodo) {
+        this.saldoPeriodo = saldoPeriodo;
     }
 }

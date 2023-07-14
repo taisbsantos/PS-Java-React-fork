@@ -7,6 +7,7 @@ import br.com.banco.entitie.Transferencia;
 import br.com.banco.repository.TransferenciaRepository;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,22 +22,32 @@ public class ContaService {
 
     public ExtratoDTO gerarExtrato(DadosEntradaDTO dadosEntradaDTO){
         List<Transferencia> transferencias = null;
+        List<Transferencia> transferenciasTotais = null;
+        BigDecimal saldoTotal = BigDecimal.ZERO;
+        BigDecimal saldoPeriodo = BigDecimal.ZERO;
+
+        transferenciasTotais = getTransferenciasByContaId(dadosEntradaDTO.getNumeroConta());
+        saldoTotal = calcularSaldo(transferenciasTotais);
 
         if (dadosEntradaDTO.getDataInicio() != null && dadosEntradaDTO.getDataFim() != null && dadosEntradaDTO.getNomeOperador() != null) {
             transferencias = getTransferenciasByContaIdAndDataTransferenciaAndNomeOperador(dadosEntradaDTO);
+            saldoPeriodo = calcularSaldo(transferencias);
         } else if(dadosEntradaDTO.getNomeOperador() != null && (dadosEntradaDTO.getDataInicio() == null ||  dadosEntradaDTO.getDataFim() == null) ){
             transferencias = getTransferenciasByContaIdAndNomeOperador(dadosEntradaDTO);
+            saldoPeriodo = saldoTotal;
         }else if(dadosEntradaDTO.getDataInicio() != null && dadosEntradaDTO.getDataFim() != null){
             transferencias = getTransferenciasByContaIdAndDataTransferencia(dadosEntradaDTO);
+            saldoPeriodo = calcularSaldo(transferencias);
         }else{
             transferencias = getTransferenciasByContaId(dadosEntradaDTO.getNumeroConta());
+            saldoPeriodo = saldoTotal;
         }
 
         List<TransferenciaDTO> transferenciasDTO = transferencias.stream()
                 .map(this::convertToTransferenciaDTO)
                 .collect(Collectors.toList());
 
-        ExtratoDTO extratoDTO= new ExtratoDTO(dadosEntradaDTO.getNumeroConta(), dadosEntradaDTO.getDataInicio(), dadosEntradaDTO.getDataFim(), transferenciasDTO);
+        ExtratoDTO extratoDTO= new ExtratoDTO(dadosEntradaDTO.getNumeroConta(), dadosEntradaDTO.getDataInicio(), dadosEntradaDTO.getDataFim(), transferenciasDTO, saldoTotal, saldoPeriodo);
 
         return extratoDTO;
     }
@@ -68,5 +79,20 @@ public class ContaService {
         transferenciaDTO.setNomeOperadorTransacao(transferencia.getNomeOperador());
         return transferenciaDTO;
     }
+
+    public BigDecimal calcularSaldo(List<Transferencia> transferencias){
+
+        List<TransferenciaDTO> transferenciasDTO = transferencias.stream()
+                .map(this::convertToTransferenciaDTO)
+                .collect(Collectors.toList());
+
+        BigDecimal saldoTotal = transferenciasDTO.stream()
+                .map(TransferenciaDTO::getValor)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return saldoTotal;
+    }
 }
+
+
 
